@@ -1,3 +1,4 @@
+window.ORBIT_MOBILE = 1;   /* test page = mobile entry page */
 /* ===== TEST MODE stubs: demo data, nothing goes to SharePoint ===== */
 const LS_BASE = 'orbit_mtest';
 var currentUser = { username: 'nader.alnajjar', displayName: 'Nader Alnajjar', role: 'Admin', jobTitle: 'W/L Operations', locationId: '7' };
@@ -48,3 +49,7 @@ window.rackBal = function (code) { const r = srkFind(code); if (!r) return null;
 /* keep the demo stock in step after put away / move */
 const _c = createItem; createItem = async function (s, l, f) { const r = await _c(s, l, f); if (l === 'SKUs_Movements_Batch_tbl' && f.Storage_Location) { const sk = hist.sku.get(f.SKU_Code); if (sk) put(f.SKU_Code, f.Batch_Code, f.Prod_Date || '', f.Expiry_Date || '', f.Storage_Location, f.PLT_Position || 0, f.Qty_Rcvd); } return r; };
 const _u = updateItem; updateItem = async function (s, l, id, f) { const r = await _u(s, l, id, f); if (l === 'SKUs_Movements_Batch_tbl') { let P = null; hist.sku.forEach((sk, code) => sk.batches.forEach(b => b.pp.forEach((pm, lc) => pm.forEach((e, pos) => { if (e.first === id && e.qty > 0) P = { code, batch: b.batch, from: lc, pos, qty: e.qty }; })))); if (P) { const b = hist.sku.get(P.code).batches.get(P.batch), pm = b.pp.get(P.from); pm.delete(P.pos); const tm = b.pp.get(f.Storage_Location) || new Map(); tm.set(f.PLT_Position || 0, { qty: P.qty, vol: 100, first: id }); b.pp.set(f.Storage_Location, tm); } } return r; };
+/* admin layout setting (App_Config_tbl row "MOBILE:layout") — in test mode users may choose any layout in Profile */
+DB.App_Config_tbl = [{ Title: 'MOBILE:layout', Config_Value: JSON.stringify({ layout: 'C', userChoice: true }) }];
+const TP_LIST = 'App_Config_tbl';
+const tpCtx = async () => ({ siteId: 'demo', listId: 'App_Config_tbl', token: 'demo' });
