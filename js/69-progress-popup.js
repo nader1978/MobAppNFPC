@@ -6,7 +6,7 @@
    Optional, for a known total:  orbProg.expect(n, 'Saving the ready plan')  before a bulk save.
    ============================================================ */
 (function () {
-  const BIG = 40, B0 = 25, SHOW_AFTER = 550, IDLE_END = 900;
+  const BIG = 1000, B0 = 25, SHOW_AFTER = 250, IDLE_END = 900;   /* B up to 1,000 rows · D above 1,000 */
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const fmt = n => (Math.round(n) || 0).toLocaleString();
   const names = new Map();   /* listId → list name (from resolveIds) */
@@ -53,7 +53,7 @@
   /* ---------- the job ---------- */
   function begin() {
     clearTimeout(hideT); if (J && !J.fin) return J;
-    shownRows = 0; J = { t0: Date.now(), user: Date.now() - lastUser < 5000, live: 0, r: 0, rows: 0, w: 0, ok: 0, bad: 0, del: 0, files: 0, mail: 0, lists: new Set(), log: [], batches: [], meta: 0, fin: false, shown: false, min: false, total: exp ? exp.n : null, label: exp ? exp.label : '' };
+    shownRows = 0; J = { t0: Date.now(), user: Date.now() - lastUser < 15000 || (okAt > 0 && Date.now() - okAt < 90000), live: 0, r: 0, rows: 0, w: 0, ok: 0, bad: 0, del: 0, files: 0, mail: 0, lists: new Set(), log: [], batches: [], meta: 0, fin: false, shown: false, min: false, total: exp ? exp.n : null, label: exp ? exp.label : '' };
     exp = null; stopReq = false; clearTimeout(showT); showT = setTimeout(() => { if (J && !J.fin && J.user && !asking) { J.shown = true; draw(); } }, SHOW_AFTER);
     return J;
   }
@@ -127,6 +127,8 @@
     if (a === 'stop') { stopReq = true; if (paused) { const r = paused.r; paused = null; r(); } J.log.push({ c: '#fca5a5', t: '■ stopped by the user — the rest is not saved', bad: true }); return draw(); } }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && el && J && J.fin) close(); });
 
+  /* the progress window, the confirmation dialog and the toast messages always stay in front of every pop-up / report window of the application */
+  { const zf = document.createElement('style'); zf.textContent = '#wMailModal,#prtSetup,#prtBack{z-index:2147483400 !important}#opBack,#opAsk,#sectionToast{z-index:2147483600 !important}#opAsk{z-index:2147483640 !important}#ssPanel,#cbPanel,.ss-panel,.cb-panel{z-index:2147483500 !important}'; document.head.appendChild(zf); }
   /* ---------- confirm before writing (only for work the user started; asked once per action) ---------- */
   let asking = null, okAt = 0, noAt = 0;
   const cssC = document.createElement('style'); cssC.textContent = `#opAsk{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px;animation:opIn .12s ease-out}
@@ -153,9 +155,9 @@
   const cssA = document.createElement('style'); cssA.textContent = `
 #opAsk .oa{width:min(430px,100%);background:var(--card,#fff);color:var(--text,#0f172a);border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.45);font-size:13.5px;animation:oaIn .16s ease-out}
 @keyframes oaIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
-#opAsk .oa-h{background:#1e3a8a;color:#fff;padding:20px 22px;display:flex;align-items:center;gap:14px}#opAsk .oa.del .oa-h{background:#991b1b}
-#opAsk .oa-i{width:48px;height:48px;border-radius:24px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex:none}
-#opAsk .oa-l{font-size:11.5px;opacity:.85;letter-spacing:.07em;text-transform:uppercase}#opAsk .oa-t{font-size:18px;font-weight:700;line-height:1.25;word-break:break-word}
+#opAsk .oa-h{background:#1e3a8a;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:11px}#opAsk .oa.del .oa-h{background:#991b1b}
+#opAsk .oa-i svg{width:18px;height:18px}.oa-i{width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex:none}
+#opAsk .oa-l{font-size:10.5px;opacity:.85;letter-spacing:.07em;text-transform:uppercase;line-height:1.2}#opAsk .oa-t{font-size:16px;font-weight:700;line-height:1.2;word-break:break-word}
 #opAsk .oa-b{padding:16px 22px 4px;display:flex;flex-direction:column;gap:9px}#opAsk .oa-r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border,#eef2f7);padding-bottom:8px}
 #opAsk .oa-r span{color:var(--gray-500,#64748b)}#opAsk .oa-r b{text-align:right;word-break:break-word}#opAsk .oa-p{color:var(--gray-600,#475569);line-height:1.45}#opAsk .oa-w{color:#991b1b;font-weight:600}
 #opAsk .oa-f{padding:14px 22px 20px;display:flex;justify-content:flex-end;align-items:center;gap:10px}#opAsk .oa-f .h{margin-right:auto;font-size:11.5px;color:var(--gray-500,#64748b)}
@@ -187,7 +189,16 @@
       document.addEventListener('keydown', key, true); document.addEventListener('keyup', kup, true);
       d.addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) fin(b.dataset.q === '1'); else if (e.target === d) fin(false); }); }); }
   window.orbAsk = box;
+  /* the older upload question (spAsk, used by 13 screens) now opens this same dialog (design A); "Yes" counts as the confirmation for the save that follows */
+  if (typeof spAsk === 'function') { const sp = function (text, title) { if (window.__orbSched > 0 && Date.now() - lastUser > 3000) return Promise.resolve(true); text = String(text == null ? '' : text) + (sp.extra || ''); sp.extra = '';
+      const L = text.split('\n').map(x => x.trim()).filter(Boolean), first = (L[0] || 'Upload the data').replace(/\?\s*$/, ''), rows = [], html = [];
+      L.slice(1).forEach(l => { const m = l.match(/^([^:⚠✔✖]{2,32}):\s*(.+)$/); if (m) rows.push([m[1].trim(), m[2].trim()]); else html.push(esc(l)); });
+      const del = /\b(delete|remove|clear|wipe)\b/i.test(first);
+      return box({ title: first + '?', label: title || (del ? 'Delete' : 'Save to SharePoint'), rows, html: html.join('<br>'), yes: del ? 'Yes, delete' : /upload/i.test(first) ? 'Yes, upload' : 'Yes, save', kind: del ? 'del' : undefined, icon: del ? undefined : 'up' })
+        .then(v => { const t = Date.now() + 400; if (v) okAt = t; else noAt = t; return v; }); };
+    sp.extra = ''; spAsk = sp; }
   window.confirm = function (msg) {
+    if (window.__orbSched > 0 && Date.now() - lastUser > 3000) return true;   /* a schedule is running — nobody to ask */
     msg = String(msg == null ? '' : msg); const now = Date.now(); okMsgs.forEach((t, k) => { if (now - t > 12000) okMsgs.delete(k); });
     if (okMsgs.has(msg)) { okMsgs.delete(msg); okAt = now + 4000; return true; }
     const a = lastAct; if (boxOpen || !a || now - a.t > 4000 || !a.el || !a.el.isConnected) return nativeConfirm(msg);
@@ -204,10 +215,14 @@
     const ok = await ask(c, j); if (ok && !j.fin) { j.t0 = Date.now(); j.shown = true; draw(); } return ok; }
 
   /* ---------- the watcher ---------- */
+  const bgNow = () => window.__orbBg > 0 && Date.now() - lastUser > 3000 && !(J && !J.fin && J.user);   /* a running user job keeps being tracked */
   const F0 = window.fetch.bind(window);
   window.fetch = async function (input, init) {
     const url = typeof input === 'string' ? input : input && input.url, method = (init && init.method) || (input && input.method) || 'GET', c = classify(url, method);
     if (!c) return F0(input, init);
+    if (bgNow()) return F0(input, init);   /* timer / schedule work: no progress window, no question */
+    /* background system-log writes (Admin Console) are silent: no question, no progress window */
+    if (window.__orbQuiet && c.k !== 'mail') { let sl = ''; try { sl = String((utGet('syslog') || {}).list || '').toLowerCase(); } catch (x) {} const ln = String(listName(c.list) || c.list || '').toLowerCase(); if (!c.list || (sl && (ln === sl || String(c.list).toLowerCase() === sl))) return F0(input, init); }
     const j = begin(); if (c.k === 'meta') { j.meta++; } else if (c.list) j.lists.add(c.list);
     if ((c.k === 'w' || c.k === 'mail') && !(await gate(c, j))) { j.cancel = true; tick(); return new Response(JSON.stringify({ error: { code: 'cancelled', message: 'Cancelled by the user — nothing was saved' } }), { status: 400, statusText: 'Cancelled', headers: { 'Content-Type': 'application/json' } }); }
     if (c.k === 'w' && paused) await paused.p;

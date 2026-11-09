@@ -340,8 +340,15 @@ $('activityExportBtn').addEventListener('click', () => {
    Navigation
    ============================================================ */
 const VIEW_META = {
+  admin: { title: 'Admin Console', sub: 'Decide which sections each user sees, and read the sign-ins and activity of every user' },
   wh3d: { title: '3D Warehouse View', sub: 'Racks and pallet storage visualised in 3D — colour by expiry, fill or SKU' },
+  mdata: { title: 'Master Data', sub: 'Add or edit inventory items, UoM, users, forklifts, RMPM items, trucks, trailers and employees' },
+  otreq: { title: 'OT Request', sub: 'Submit the overtime you need for approval — staff, hours and volume' },
+  otrep: { title: 'OT Replacement', sub: 'Days off given back for overtime — hours are deducted from each staff balance' },
+  otapp: { title: 'OT Approvals', sub: 'Review the overtime requests of the locations — approve or reject with remarks' },
   otr: { title: 'OT Approved vs Recovered', sub: 'Approved OT hours vs the hours given back as days off — by location, in-charge and staff' },
+  fla: { title: 'Forklift Activity', sub: 'Start / end activities of the forklift operators — by unit, by operator, units × dates and idle units' },
+  flr: { title: 'Forklift Receiving', sub: 'Units received / parked in the mobile app — condition reported by the users and what changed since the previous inspection' },
   rkc: { title: 'Rack Hits & Damages', sub: 'Rack inspections from the mobile app — racks × dates per location, shown on the 3D' },
   eqw: { title: 'Marketing Equipment Workshop', sub: 'Receive equipment from sales, estimate repair vs book value, assign technicians, track KPIs and asset history' },
   rmp: { title: 'RMPM Inventory Control', sub: 'Raw & packaging materials — GRN with QC, FEFO issue to production, alerts, bins, stock count' },
@@ -390,7 +397,7 @@ const VIEW_META = {
 function activeViewId() { const v = document.querySelector('.view.active'); return v ? v.id.replace(/^view-/, '') : ''; }
 function sectionToast(msg, type) {
   let t = document.querySelector('#sectionToast');
-  if (!t) { t = document.createElement('div'); t.id = 'sectionToast'; t.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:100002;padding:10px 14px;border-radius:8px;background:#1e293b;color:#fff;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.3);max-width:380px;'; document.body.appendChild(t); }
+  if (!t) { t = document.createElement('div'); t.id = 'sectionToast'; t.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147483100;padding:10px 14px;border-radius:8px;background:#1e293b;color:#fff;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.3);max-width:380px;'; document.body.appendChild(t); }
   t.textContent = msg; t.style.background = type === 'warn' ? '#b45309' : type === 'error' ? '#b91c1c' : '#166534'; t.style.display = 'block';
   clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 4000);
 }
