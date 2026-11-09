@@ -1205,3 +1205,13 @@ body.dark .vis-pop{background:#1e293b}
 .nav-sub-body{margin-left:14px;border-left:1px solid rgba(255,255,255,.12)}.nav-sub.collapsed .nav-sub-body{display:none}.nav-sub.collapsed:has(.nav-item.active) .sname::after{content:' •';color:var(--brand)}
 body.sb-mini .nav-sub-head{padding:0;margin:4px 14px;height:1px;min-height:1px;background:var(--sidebar-hover);border:0}body.sb-mini .nav-sub-head .caret,body.sb-mini .nav-sub-head .sname,body.sb-mini .nav-sub-head .gcount{display:none}body.sb-mini .nav-sub-body{margin-left:0;border:0}body.sb-mini .nav-sub.collapsed .nav-sub-body{display:block}
 .ns-sub{margin:8px 0 0 18px;padding:6px 8px;border-left:3px solid var(--brand);background:rgba(127,127,127,.06);border-radius:0 8px 8px 0}.ns-sname{flex:1;min-width:120px;margin:0;font-weight:600}
+
+/* top bar: no "Import token" button; the buttons always stay on one line (they scroll sideways on a narrow window) */
+#importTokenBtn{display:none!important}
+.topbar-actions{flex-wrap:nowrap!important;flex:0 1 auto;min-width:0;margin-left:auto;overflow-x:auto;overflow-y:visible;scrollbar-width:none;padding:8px 2px 2px;margin-top:-8px}
+.topbar-actions::-webkit-scrollbar{display:none;height:0}
+.topbar-actions>*{flex-shrink:0;white-space:nowrap}
+.topbar{flex-wrap:wrap;row-gap:6px}
+.topbar>div:not(.topbar-actions):not(.tb-logo){min-width:220px;flex:1 1 260px}
+.topbar>div:not(.topbar-actions):not(.tb-logo) .topbar-title,.topbar>div:not(.topbar-actions):not(.tb-logo) .topbar-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1500px){.topbar-actions{gap:6px}.topbar-actions>button,.topbar-actions>.icon-btn,.topbar-actions>span{padding-left:8px!important;padding-right:8px!important;font-size:12.5px!important}}
